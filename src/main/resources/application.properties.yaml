@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: blog-api-spring
+  data:
+    mongodb:
+    host: localhost
+    port: 27017
+    database: blog-api-spring
+
