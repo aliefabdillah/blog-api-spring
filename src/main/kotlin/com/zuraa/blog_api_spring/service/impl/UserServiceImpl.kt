@@ -10,8 +10,10 @@ import com.zuraa.blog_api_spring.service.UserService
 import com.zuraa.blog_api_spring.utils.HashUtil
 import com.zuraa.blog_api_spring.utils.TokenUtil
 import com.zuraa.blog_api_spring.utils.ValidationUtil
+import org.apache.tomcat.websocket.AuthenticationException
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
@@ -57,16 +59,20 @@ class UserServiceImpl(
     }
 
     override fun auth(request: UserLoginRequest): ApiSuccessResponse<Any> {
+
+        try {
+            // validate email and password with data in database
+            authManager.authenticate(UsernamePasswordAuthenticationToken(request.email, request.password))
+        } catch (e: BadCredentialsException) {
+            // return exception if bad credentials
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Wrong password!",
+                null
+            )
+        }
+
         val user = userDetailsService.loadUserByUsername(request.email)
-
-        if (!hashUtil.checkBcrypt(request.password, user.password)) throw ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Wrong password!",
-            null
-        )
-
-        authManager.authenticate(UsernamePasswordAuthenticationToken(request.email, request.password))
-
 
         val accessToken = createAccessToken(user)
 
