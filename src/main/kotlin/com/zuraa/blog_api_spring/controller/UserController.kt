@@ -2,6 +2,7 @@ package com.zuraa.blog_api_spring.controller
 
 import com.zuraa.blog_api_spring.entity.User
 import com.zuraa.blog_api_spring.model.ApiSuccessResponse
+import com.zuraa.blog_api_spring.model.UserLoginRequest
 import com.zuraa.blog_api_spring.model.UserRegisterRequest
 import com.zuraa.blog_api_spring.service.UserService
 import org.springframework.http.HttpStatus
@@ -18,5 +19,10 @@ class UserController(val userService: UserService) {
     @PostMapping(value = ["/register"], produces = ["application/json"], consumes = ["application/json"])
     fun registerUser(@RequestBody body: UserRegisterRequest): ApiSuccessResponse<User> {
         return userService.create(request = body)
+    }
+
+    @PostMapping(value = ["/login"], produces = ["application/json"], consumes = ["application/json"])
+    fun loginUser(@RequestBody body: UserLoginRequest): ApiSuccessResponse<Any> {
+        return userService.auth(body)
     }
 }
