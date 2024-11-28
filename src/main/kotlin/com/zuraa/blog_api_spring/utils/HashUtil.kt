@@ -1,7 +1,9 @@
 package com.zuraa.blog_api_spring.utils
 
 import org.springframework.security.crypto.bcrypt.BCrypt
+import org.springframework.stereotype.Component
 
+@Component
 class HashUtil {
     /*
     * Create hashed password
