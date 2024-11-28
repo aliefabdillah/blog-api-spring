@@ -25,10 +25,10 @@ class SecurityConfig(val authenticationProvider: AuthenticationProvider) {
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it
-                    .requestMatchers("/api/**").authenticated()  //set endpint must be authenticated
+//                    .requestMatchers("/api/**").authenticated()  //set endpint must be authenticated
                     .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()  //set endpoint public
                     .requestMatchers(HttpMethod.POST, "/api/user/login").permitAll() //set endpoint public
-                    .anyRequest().fullyAuthenticated()
+//                    .anyRequest().fullyAuthenticated()
             }
         // other config
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
