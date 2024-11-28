@@ -18,13 +18,13 @@ class TokenUtil(
     )
 
     fun generate(
-        userDetails: User,
+        userDetails: UserDetails,
         expirationDate: Date,
         additionalClaims: Map<String, Any> = emptyMap()
     ): String =
         Jwts.builder()
             .claims()
-            .subject(userDetails.email)
+            .subject(userDetails.username)
             .issuedAt(Date(System.currentTimeMillis()))
             .expiration(expirationDate)
             .add(additionalClaims)
