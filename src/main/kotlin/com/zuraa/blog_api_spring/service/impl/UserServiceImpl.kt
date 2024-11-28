@@ -57,9 +57,16 @@ class UserServiceImpl(
     }
 
     override fun auth(request: UserLoginRequest): ApiSuccessResponse<Any> {
+        val user = userDetailsService.loadUserByUsername(request.email)
+
+        if (!hashUtil.checkBcrypt(request.password, user.password)) throw ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Wrong password!",
+            null
+        )
+
         authManager.authenticate(UsernamePasswordAuthenticationToken(request.email, request.password))
 
-        val user = userDetailsService.loadUserByUsername(request.email)
 
         val accessToken = createAccessToken(user)
 
