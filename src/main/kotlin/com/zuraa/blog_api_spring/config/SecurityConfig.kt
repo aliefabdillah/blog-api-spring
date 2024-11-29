@@ -23,13 +23,13 @@ class SecurityConfig(val authenticationProvider: AuthenticationProvider) {
         // Define public and private routes
         http
             .csrf { it.disable() }
-            .authorizeHttpRequests {
-                it
-//                    .requestMatchers("/api/**").authenticated()  //set endpint must be authenticated
-                    .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()  //set endpoint public
-                    .requestMatchers(HttpMethod.POST, "/api/user/login").permitAll() //set endpoint public
+//            .authorizeHttpRequests {
+//                it
+////                    .requestMatchers("/api/**").authenticated()  //set endpint must be authenticated
+//                    .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()  //set endpoint public
+//                    .requestMatchers(HttpMethod.POST, "/api/user/login").permitAll() //set endpoint public
 //                    .anyRequest().fullyAuthenticated()
-            }
+//            }
         // other config
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authenticationProvider(authenticationProvider)
