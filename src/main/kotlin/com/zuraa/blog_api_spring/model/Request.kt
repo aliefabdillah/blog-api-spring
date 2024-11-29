@@ -24,3 +24,19 @@ data class UserLoginRequest(
     @field:Size(min = 6, message = "Password at least must be 8 char long")
     val password: String,
 )
+
+data class CreateArticleRequest(
+    @field:NotBlank
+    val title: String,
+
+    @field:NotBlank
+    val content: String,
+)
+
+data class UpdateArticleRequest(
+    @field:NotBlank
+    val title: String?,
+
+    @field:NotBlank
+    val content: String?,
+)
