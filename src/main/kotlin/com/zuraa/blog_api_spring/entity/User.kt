@@ -2,6 +2,7 @@ package com.zuraa.blog_api_spring.entity
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
+import org.springframework.data.mongodb.core.mapping.DBRef
 import org.springframework.data.mongodb.core.mapping.Document
 import java.util.Date
 import java.util.UUID
@@ -21,4 +22,7 @@ data class User(
     val createdAt: Date,
 
     val updatedAt: Date,
+
+    @DBRef
+    val articles: List<Article> = mutableListOf()
 )
