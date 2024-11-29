@@ -7,6 +7,7 @@ import com.zuraa.blog_api_spring.model.UserPublicResponse
 import com.zuraa.blog_api_spring.model.UserRegisterRequest
 import com.zuraa.blog_api_spring.service.UserService
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -25,5 +26,10 @@ class UserController(val userService: UserService) {
     @PostMapping(value = ["/login"], produces = ["application/json"], consumes = ["application/json"])
     fun loginUser(@RequestBody body: UserLoginRequest): ApiSuccessResponse<Any> {
         return userService.auth(body)
+    }
+
+    @GetMapping(value = ["/me"])
+    fun getAuthUser(auth: Authentication): ApiSuccessResponse<UserPublicResponse> {
+        return userService.getUserAuth(auth)
     }
 }

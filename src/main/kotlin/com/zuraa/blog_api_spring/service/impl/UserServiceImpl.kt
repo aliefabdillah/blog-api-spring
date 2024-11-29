@@ -11,11 +11,11 @@ import com.zuraa.blog_api_spring.service.UserService
 import com.zuraa.blog_api_spring.utils.HashUtil
 import com.zuraa.blog_api_spring.utils.TokenUtil
 import com.zuraa.blog_api_spring.utils.ValidationUtil
-import org.apache.tomcat.websocket.AuthenticationException
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -79,6 +79,13 @@ class UserServiceImpl(
         val accessToken = createAccessToken(user)
 
         return ApiSuccessResponse(data = mapOf("token" to accessToken), status = HttpStatus.OK, code = 200)
+    }
+
+    override fun getUserAuth(auth: Authentication): ApiSuccessResponse<UserPublicResponse> {
+        // Get User data by email authenticated user
+        val userData = userRepository.findByEmail(auth.name) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+
+        return ApiSuccessResponse(data = userData.toUserPublicResponse(), code = 201, status = HttpStatus.CREATED)
     }
 
     private fun createAccessToken(user: UserDetails) = tokenUtil.generate(
