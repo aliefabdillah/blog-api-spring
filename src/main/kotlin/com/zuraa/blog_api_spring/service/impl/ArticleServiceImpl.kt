@@ -5,7 +5,9 @@ import com.zuraa.blog_api_spring.model.ApiSuccessResponse
 import com.zuraa.blog_api_spring.model.CreateArticleRequest
 import com.zuraa.blog_api_spring.model.UpdateArticleRequest
 import com.zuraa.blog_api_spring.service.ArticleService
+import org.springframework.stereotype.Service
 
+@Service
 class ArticleServiceImpl : ArticleService {
     override fun create(createRequest: CreateArticleRequest): ApiSuccessResponse<Article> {
         TODO("Not yet implemented")
