@@ -4,6 +4,7 @@ import com.zuraa.blog_api_spring.auth.jwt.JwtProperties
 import com.zuraa.blog_api_spring.entity.User
 import com.zuraa.blog_api_spring.model.ApiSuccessResponse
 import com.zuraa.blog_api_spring.model.UserLoginRequest
+import com.zuraa.blog_api_spring.model.UserPublicResponse
 import com.zuraa.blog_api_spring.model.UserRegisterRequest
 import com.zuraa.blog_api_spring.repository.UserRepository
 import com.zuraa.blog_api_spring.service.UserService
@@ -30,7 +31,8 @@ class UserServiceImpl(
     val jwtProperties: JwtProperties,
     val tokenUtil: TokenUtil
 ) : UserService {
-    override fun create(request: UserRegisterRequest): ApiSuccessResponse<User> {
+
+    override fun create(request: UserRegisterRequest): ApiSuccessResponse<UserPublicResponse> {
         // VALIDATE INPUT
         validationUtil.validate(request)
 
@@ -53,7 +55,7 @@ class UserServiceImpl(
         )
 
         // SAVE TO DATABASE
-        val usersCreated = userRepository.save(userRequest)
+        val usersCreated = userRepository.save(userRequest).toUserPublicResponse()
 
         return ApiSuccessResponse(data = usersCreated, code = 201, status = HttpStatus.CREATED)
     }
@@ -87,4 +89,12 @@ class UserServiceImpl(
     private fun getAccessTokenExpiration(): Date =
         Date(System.currentTimeMillis() + jwtProperties.accessTokenExp)
 
+    private fun User.toUserPublicResponse(): UserPublicResponse =
+        UserPublicResponse(
+            id = this.id,
+            name = this.name,
+            email = this.email,
+            createdAt = this.createdAt,
+            updatedAt = this.updatedAt
+        )
 }
