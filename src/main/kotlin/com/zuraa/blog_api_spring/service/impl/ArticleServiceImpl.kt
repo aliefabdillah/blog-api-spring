@@ -26,6 +26,7 @@ class ArticleServiceImpl(
 ) : ArticleService {
     override fun create(
         auth: Authentication,
+        files: MultipartFile?,
         createRequest: CreateArticleRequest
     ): ApiSuccessResponse<ArticleWithAuthor> {
         validationUtil.validate(createRequest)
@@ -37,9 +38,22 @@ class ArticleServiceImpl(
                 "User not login/authenticated"
             )
 
+        var filePath = ""
+        if (files != null) {
+            if (!files.isEmpty) {
+                try {
+                    validationUtil.validateImageFile(files)
+                    filePath = fileStorageService.storeFile(files)
+                } catch (e: Exception) {
+                    throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.message)
+                }
+            }
+        }
+
         val article = Article(
             title = createRequest.title,
             content = createRequest.content,
+            imgCover = filePath,
             authorId = authUser.id,
             createdAt = Date(),
             updatedAt = Date()
