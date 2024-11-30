@@ -23,6 +23,7 @@ data class UserAuthPublicResponse(
     val id: String,
     val name: String,
     val email: String,
+    val imgProfile: String,
     val createdAt: Date,
     val updatedAt: Date,
 )
