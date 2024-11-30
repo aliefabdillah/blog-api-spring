@@ -4,6 +4,7 @@ import com.zuraa.blog_api_spring.entity.Article
 import com.zuraa.blog_api_spring.model.*
 import com.zuraa.blog_api_spring.service.ArticleService
 import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -51,5 +52,10 @@ class ArticleController(val articleService: ArticleService) {
         @PathVariable("id") id: String
     ): ApiSuccessResponse<Article> {
         return articleService.update(id, body)
+    }
+
+    @DeleteMapping(value = ["/{id}"])
+    fun deleteArticle(@PathVariable("id") id: String): ApiSuccessResponse<Any> {
+        return articleService.delete(id)
     }
 }
