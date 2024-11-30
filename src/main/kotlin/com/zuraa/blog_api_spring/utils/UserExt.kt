@@ -9,8 +9,9 @@ fun User.toUserPublicResponse(): UserAuthPublicResponse =
         id = this.id,
         name = this.name,
         email = this.email,
+        imgProfile = this.imgProfile ?: "",
         createdAt = this.createdAt,
-        updatedAt = this.updatedAt
+        updatedAt = this.updatedAt,
     )
 
 fun User.toUserWithRelationResponse(): UserWithArticle =
