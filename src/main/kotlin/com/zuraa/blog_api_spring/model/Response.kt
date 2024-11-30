@@ -1,6 +1,5 @@
 package com.zuraa.blog_api_spring.model
 
-import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.http.HttpStatus
 import java.util.*
 
@@ -22,4 +21,14 @@ data class UserPublicResponse(
     val email: String,
     val createdAt: Date,
     val updatedAt: Date,
+)
+
+data class ArticleWithAuthor(
+    val id: String,
+    val title: String,
+    val content: String,
+    val authorId: String,
+    val createdAt: Date,
+    val updatedAt: Date,
+    val author: UserPublicResponse,
 )
