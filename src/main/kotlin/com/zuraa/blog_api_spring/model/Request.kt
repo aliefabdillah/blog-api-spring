@@ -51,3 +51,7 @@ data class ListArticleQuery(
 
     val authorName: String,
 )
+
+data class UpdateProfileRequest(
+    val name: String?,
+)
