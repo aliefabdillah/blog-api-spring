@@ -87,7 +87,8 @@ class ArticleServiceImpl(
         val paginationData = Pagination(
             current = query.page + 1,
             perPage = query.size,
-            totalPage = articlesPageData.totalPages
+            lastPage = articlesPageData.totalPages,
+            total = articlesPageData.content.size
         )
 
         return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200, pagination = paginationData)

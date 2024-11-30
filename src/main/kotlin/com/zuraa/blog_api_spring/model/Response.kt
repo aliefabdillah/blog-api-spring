@@ -7,9 +7,9 @@ import java.util.*
 data class ApiSuccessResponse<T>(
     val status: HttpStatus,
     val code: Int,
-    val data: T? = null,
     @JsonInclude(JsonInclude.Include.NON_NULL)  //not showing in body when null
     val pagination: Pagination? = null,
+    val data: T? = null,
 )
 
 data class ApiErrorResponse(
@@ -39,5 +39,6 @@ data class ArticleWithAuthor(
 data class Pagination(
     val current: Int,
     val perPage: Int,
-    val totalPage: Int,
+    val lastPage: Int,
+    val total: Int,
 )
