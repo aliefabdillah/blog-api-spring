@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.server.ResponseStatusException
 import java.util.Date
 
@@ -24,7 +25,8 @@ class UserServiceImpl(
     val authManager: AuthenticationManager,
     val userDetailsService: CustomUserServiceDetails,
     val jwtProperties: JwtProperties,
-    val tokenUtil: TokenUtil
+    val tokenUtil: TokenUtil,
+    val fileStorageService: FileStorageService
 ) : UserService {
 
     override fun create(request: UserRegisterRequest): ApiSuccessResponse<UserAuthPublicResponse> {
@@ -78,15 +80,51 @@ class UserServiceImpl(
 
     override fun getUserAuth(auth: Authentication): ApiSuccessResponse<UserAuthPublicResponse> {
         // Get User data by email authenticated user
-        val userData = userRepository.findByEmail(auth.name) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+        val userData = userRepository.findByEmail(auth.name) ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "User not found!"
+        )
 
         return ApiSuccessResponse(data = userData.toUserPublicResponse(), code = 200, status = HttpStatus.OK)
     }
 
     override fun getUserWithArticle(auth: Authentication): ApiSuccessResponse<UserWithArticle> {
-        val userData = userRepository.findByEmail(auth.name) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+        val userData = userRepository.findByEmail(auth.name) ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "User not found!"
+        )
 
         return ApiSuccessResponse(data = userData.toUserWithRelationResponse(), code = 200, status = HttpStatus.OK)
+    }
+
+    override fun update(
+        auth: Authentication,
+        request: UpdateProfileRequest,
+        files: MultipartFile
+    ): ApiSuccessResponse<UserAuthPublicResponse> {
+        println("ABC")
+        validationUtil.validate(request)
+
+        val updatedData = userRepository.findByEmail(auth.name) ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "User not found!"
+        )
+
+        updatedData.name = request.name ?: updatedData.name
+
+        if (!files.isEmpty) {
+            try {
+                validationUtil.validateImageFile(files)
+                val filePath = fileStorageService.storeFile(files)
+                updatedData.imgProfile = filePath
+            } catch (e: Exception) {
+                throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.message)
+            }
+        }
+
+        userRepository.save(updatedData)
+
+        return ApiSuccessResponse(data = updatedData.toUserPublicResponse(), code = 200, status = HttpStatus.OK)
     }
 
     private fun createAccessToken(user: UserDetails) = tokenUtil.generate(
