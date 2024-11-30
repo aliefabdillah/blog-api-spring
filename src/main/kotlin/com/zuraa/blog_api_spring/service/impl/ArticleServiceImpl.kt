@@ -2,15 +2,13 @@ package com.zuraa.blog_api_spring.service.impl
 
 import com.zuraa.blog_api_spring.entity.Article
 import com.zuraa.blog_api_spring.entity.User
-import com.zuraa.blog_api_spring.model.ApiSuccessResponse
-import com.zuraa.blog_api_spring.model.ArticleWithAuthor
-import com.zuraa.blog_api_spring.model.CreateArticleRequest
-import com.zuraa.blog_api_spring.model.UpdateArticleRequest
+import com.zuraa.blog_api_spring.model.*
 import com.zuraa.blog_api_spring.repository.ArticleRepository
 import com.zuraa.blog_api_spring.repository.UserRepository
 import com.zuraa.blog_api_spring.service.ArticleService
 import com.zuraa.blog_api_spring.utils.ValidationUtil
 import com.zuraa.blog_api_spring.utils.toUserPublicResponse
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
@@ -56,8 +54,43 @@ class ArticleServiceImpl(
         return ApiSuccessResponse(data = articleResponse, status = HttpStatus.CREATED, code = 201)
     }
 
-    override fun getAll(query: Any): ApiSuccessResponse<List<Article>> {
-        TODO("Not yet implemented")
+    override fun getAll(query: ListArticleQuery): ApiSuccessResponse<List<ArticleWithAuthor>> {
+        // Validate query
+        validationUtil.validate(query)
+
+        val responseData = mutableListOf<ArticleWithAuthor>()
+        val pageable = PageRequest.of(query.page, query.size)
+
+        //  GET USER LIST BY QUERY NAME
+        val usersByName = userRepository.findByName(query.authorName)
+        // CONVERT INTO LIST OF ID USER
+        val listOfIdUser = usersByName.map { it.id }
+
+        // GET Articles BY Title AND AuthorId
+        val articlesPageData = articleRepository.findByTitleAndAuthorId(query.title, listOfIdUser, pageable)
+
+        // Return empty body
+        if (articlesPageData.isEmpty) {
+            return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200)
+        }
+
+        // get author data
+        articlesPageData.content.forEach { article ->
+            val authorData = userRepository.findByIdOrNull(article.authorId) ?: throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User not found!"
+            )
+
+            responseData.add(toArticleWithAuthorResponse(authorData, article))
+        }
+
+        val paginationData = Pagination(
+            current = query.page + 1,
+            perPage = query.size,
+            totalPage = articlesPageData.totalPages
+        )
+
+        return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200, pagination = paginationData)
     }
 
     override fun getById(id: String): ApiSuccessResponse<ArticleWithAuthor> {
@@ -73,7 +106,7 @@ class ArticleServiceImpl(
             )
 
         val responseData = toArticleWithAuthorResponse(authUser, articleData)
-        return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200)
+        return ApiSuccessResponse(status = HttpStatus.OK, code = 200, data = responseData)
     }
 
     override fun update(id: String, updateRequest: UpdateArticleRequest): ApiSuccessResponse<Article> {
