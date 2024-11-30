@@ -23,9 +23,10 @@ class ArticleController(val articleService: ArticleService) {
     @PostMapping(value = ["/"])
     fun createArticle(
         authentication: Authentication,
-        @RequestBody createArticleRequest: CreateArticleRequest
+        @ModelAttribute createArticleRequest: CreateArticleRequest,
+        @RequestParam("files") files: MultipartFile?
     ): ApiSuccessResponse<ArticleWithAuthor> {
-        return articleService.create(authentication, createArticleRequest)
+        return articleService.create(authentication, createRequest = createArticleRequest, files = files)
     }
 
     @GetMapping(value = ["/{id}"])
