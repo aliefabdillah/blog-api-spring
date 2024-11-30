@@ -35,10 +35,8 @@ data class CreateArticleRequest(
 )
 
 data class UpdateArticleRequest(
-    @field:NotBlank
     val title: String?,
 
-    @field:NotBlank
     val content: String?,
 )
 
