@@ -11,6 +11,7 @@ import com.zuraa.blog_api_spring.service.UserService
 import com.zuraa.blog_api_spring.utils.HashUtil
 import com.zuraa.blog_api_spring.utils.TokenUtil
 import com.zuraa.blog_api_spring.utils.ValidationUtil
+import com.zuraa.blog_api_spring.utils.toUserPublicResponse
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
@@ -95,13 +96,4 @@ class UserServiceImpl(
 
     private fun getAccessTokenExpiration(): Date =
         Date(System.currentTimeMillis() + jwtProperties.accessTokenExp)
-
-    private fun User.toUserPublicResponse(): UserPublicResponse =
-        UserPublicResponse(
-            id = this.id,
-            name = this.name,
-            email = this.email,
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt
-        )
 }
