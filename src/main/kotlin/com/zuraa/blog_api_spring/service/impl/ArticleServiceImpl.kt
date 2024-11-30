@@ -1,6 +1,7 @@
 package com.zuraa.blog_api_spring.service.impl
 
 import com.zuraa.blog_api_spring.entity.Article
+import com.zuraa.blog_api_spring.entity.User
 import com.zuraa.blog_api_spring.model.ApiSuccessResponse
 import com.zuraa.blog_api_spring.model.ArticleWithAuthor
 import com.zuraa.blog_api_spring.model.CreateArticleRequest
@@ -10,6 +11,7 @@ import com.zuraa.blog_api_spring.repository.UserRepository
 import com.zuraa.blog_api_spring.service.ArticleService
 import com.zuraa.blog_api_spring.utils.ValidationUtil
 import com.zuraa.blog_api_spring.utils.toUserPublicResponse
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
@@ -22,7 +24,10 @@ class ArticleServiceImpl(
     val userRepository: UserRepository,
     val articleRepository: ArticleRepository
 ) : ArticleService {
-    override fun create(auth: Authentication, createRequest: CreateArticleRequest): ApiSuccessResponse<ArticleWithAuthor> {
+    override fun create(
+        auth: Authentication,
+        createRequest: CreateArticleRequest
+    ): ApiSuccessResponse<ArticleWithAuthor> {
         validationUtil.validate(createRequest)
 
         // get user
@@ -46,15 +51,7 @@ class ArticleServiceImpl(
 
         userRepository.save(authUser)
 
-        val articleResponse = ArticleWithAuthor(
-            id = article.id,
-            title = article.title,
-            content = article.content,
-            authorId = authUser.id,
-            author = authUser.toUserPublicResponse(),
-            createdAt = article.createdAt,
-            updatedAt = article.updatedAt
-        )
+        val articleResponse = toArticleWithAuthorResponse(authUser, article)
 
         return ApiSuccessResponse(data = articleResponse, status = HttpStatus.CREATED, code = 201)
     }
@@ -63,8 +60,20 @@ class ArticleServiceImpl(
         TODO("Not yet implemented")
     }
 
-    override fun getById(id: String): ApiSuccessResponse<Article> {
-        TODO("Not yet implemented")
+    override fun getById(id: String): ApiSuccessResponse<ArticleWithAuthor> {
+        val articleData = articleRepository.findByIdOrNull(id) ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Article not found!"
+        )
+
+        val authUser =
+            userRepository.findByIdOrNull(articleData.authorId) ?: throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User not found!"
+            )
+
+        val responseData = toArticleWithAuthorResponse(authUser, articleData)
+        return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200)
     }
 
     override fun update(id: String, updateRequest: UpdateArticleRequest): ApiSuccessResponse<Article> {
@@ -74,4 +83,15 @@ class ArticleServiceImpl(
     override fun delete(id: String): ApiSuccessResponse<Any> {
         TODO("Not yet implemented")
     }
+
+    private fun toArticleWithAuthorResponse(user: User, article: Article) =
+        ArticleWithAuthor(
+            id = article.id,
+            title = article.title,
+            content = article.content,
+            authorId = user.id,
+            author = user.toUserPublicResponse(),
+            createdAt = article.createdAt,
+            updatedAt = article.updatedAt
+        )
 }
