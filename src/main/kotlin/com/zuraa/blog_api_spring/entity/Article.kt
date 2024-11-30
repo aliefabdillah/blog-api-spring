@@ -13,6 +13,8 @@ data class Article(
 
     var content: String,
 
+    var imgCover: String? = null,
+
     val authorId: String,
 
     val createdAt: Date,
