@@ -24,5 +24,5 @@ data class User(
     val updatedAt: Date,
 
     @DBRef
-    val articles: List<Article> = mutableListOf()
+    val articles: MutableList<Article> = mutableListOf()
 )
