@@ -12,11 +12,6 @@ import org.springframework.web.server.ResponseStatusException
 @RestControllerAdvice
 class ErrorController {
 
-    @ExceptionHandler(value = [Unauthorized::class])
-    fun unauthorized(): ApiErrorResponse {
-        return ApiErrorResponse(message = "Login first before access this endpoint", status = HttpStatus.UNAUTHORIZED, code = 401)
-    }
-
     @ExceptionHandler(ResponseStatusException::class)
     fun handleResponseStatusException(exception: ResponseStatusException): ResponseEntity<Any> {
         return ResponseEntity(exception.body, exception.statusCode)
