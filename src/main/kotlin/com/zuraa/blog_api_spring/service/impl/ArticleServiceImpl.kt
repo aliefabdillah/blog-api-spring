@@ -13,6 +13,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.server.ResponseStatusException
 import java.util.Date
 
@@ -20,7 +21,8 @@ import java.util.Date
 class ArticleServiceImpl(
     val validationUtil: ValidationUtil,
     val userRepository: UserRepository,
-    val articleRepository: ArticleRepository
+    val articleRepository: ArticleRepository,
+    val fileStorageService: FileStorageService
 ) : ArticleService {
     override fun create(
         auth: Authentication,
@@ -110,7 +112,11 @@ class ArticleServiceImpl(
         return ApiSuccessResponse(status = HttpStatus.OK, code = 200, data = responseData)
     }
 
-    override fun update(id: String, updateRequest: UpdateArticleRequest): ApiSuccessResponse<Article> {
+    override fun update(
+        id: String,
+        files: MultipartFile,
+        updateRequest: UpdateArticleRequest
+    ): ApiSuccessResponse<Article> {
         validationUtil.validate(updateRequest)
 
         val updatedData = articleRepository.findByIdOrNull(id) ?: throw ResponseStatusException(
@@ -120,6 +126,16 @@ class ArticleServiceImpl(
 
         updatedData.title = updateRequest.title ?: updatedData.title
         updatedData.content = updateRequest.content ?: updatedData.content
+
+        if (!files.isEmpty) {
+            try {
+                validationUtil.validateImageFile(files)
+                val filePath = fileStorageService.storeFile(files)
+                updatedData.imgCover = filePath
+            } catch (e: Exception) {
+                throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.message)
+            }
+        }
 
         articleRepository.save(updatedData)
 
@@ -142,6 +158,7 @@ class ArticleServiceImpl(
             id = article.id,
             title = article.title,
             content = article.content,
+            imgProfile = article.imgCover ?: "",
             authorId = user.id,
             author = user.toUserPublicResponse(),
             createdAt = article.createdAt,
