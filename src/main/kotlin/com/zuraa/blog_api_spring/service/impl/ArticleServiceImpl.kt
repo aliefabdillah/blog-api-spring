@@ -159,12 +159,12 @@ class ArticleServiceImpl(
     }
 
     override fun delete(id: String): ApiSuccessResponse<Any> {
-        val deletedUser = articleRepository.findByIdOrNull(id) ?: throw ResponseStatusException(
+        val deletedArticle = articleRepository.findByIdOrNull(id) ?: throw ResponseStatusException(
             HttpStatus.NOT_FOUND,
             "Article  not found!"
         )
 
-        articleRepository.delete(deletedUser)
+        articleRepository.delete(deletedArticle)
 
         return ApiSuccessResponse(data = null, status = HttpStatus.OK, code = 200)
     }
