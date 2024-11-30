@@ -6,6 +6,7 @@ import com.zuraa.blog_api_spring.service.ArticleService
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/article")
@@ -48,10 +50,11 @@ class ArticleController(val articleService: ArticleService) {
 
     @PatchMapping(value = ["/{id}"])
     fun updateArticle(
-        @RequestBody body: UpdateArticleRequest,
+        @RequestParam("files") files: MultipartFile,
+        @ModelAttribute body: UpdateArticleRequest,
         @PathVariable("id") id: String
     ): ApiSuccessResponse<Article> {
-        return articleService.update(id, body)
+        return articleService.update(id = id, updateRequest = body, files = files)
     }
 
     @DeleteMapping(value = ["/{id}"])
