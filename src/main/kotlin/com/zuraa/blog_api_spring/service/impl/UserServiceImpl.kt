@@ -2,16 +2,10 @@ package com.zuraa.blog_api_spring.service.impl
 
 import com.zuraa.blog_api_spring.auth.jwt.JwtProperties
 import com.zuraa.blog_api_spring.entity.User
-import com.zuraa.blog_api_spring.model.ApiSuccessResponse
-import com.zuraa.blog_api_spring.model.UserLoginRequest
-import com.zuraa.blog_api_spring.model.UserPublicResponse
-import com.zuraa.blog_api_spring.model.UserRegisterRequest
+import com.zuraa.blog_api_spring.model.*
 import com.zuraa.blog_api_spring.repository.UserRepository
 import com.zuraa.blog_api_spring.service.UserService
-import com.zuraa.blog_api_spring.utils.HashUtil
-import com.zuraa.blog_api_spring.utils.TokenUtil
-import com.zuraa.blog_api_spring.utils.ValidationUtil
-import com.zuraa.blog_api_spring.utils.toUserPublicResponse
+import com.zuraa.blog_api_spring.utils.*
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
@@ -33,7 +27,7 @@ class UserServiceImpl(
     val tokenUtil: TokenUtil
 ) : UserService {
 
-    override fun create(request: UserRegisterRequest): ApiSuccessResponse<UserPublicResponse> {
+    override fun create(request: UserRegisterRequest): ApiSuccessResponse<UserAuthPublicResponse> {
         // VALIDATE INPUT
         validationUtil.validate(request)
 
@@ -82,11 +76,17 @@ class UserServiceImpl(
         return ApiSuccessResponse(data = mapOf("token" to accessToken), status = HttpStatus.OK, code = 200)
     }
 
-    override fun getUserAuth(auth: Authentication): ApiSuccessResponse<UserPublicResponse> {
+    override fun getUserAuth(auth: Authentication): ApiSuccessResponse<UserAuthPublicResponse> {
         // Get User data by email authenticated user
         val userData = userRepository.findByEmail(auth.name) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
 
-        return ApiSuccessResponse(data = userData.toUserPublicResponse(), code = 201, status = HttpStatus.CREATED)
+        return ApiSuccessResponse(data = userData.toUserPublicResponse(), code = 200, status = HttpStatus.OK)
+    }
+
+    override fun getUserWithArticle(auth: Authentication): ApiSuccessResponse<UserWithArticle> {
+        val userData = userRepository.findByEmail(auth.name) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+
+        return ApiSuccessResponse(data = userData.toUserWithRelationResponse(), code = 200, status = HttpStatus.OK)
     }
 
     private fun createAccessToken(user: UserDetails) = tokenUtil.generate(
