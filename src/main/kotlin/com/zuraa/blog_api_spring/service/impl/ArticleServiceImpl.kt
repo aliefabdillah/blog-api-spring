@@ -128,7 +128,7 @@ class ArticleServiceImpl(
 
     override fun update(
         id: String,
-        files: MultipartFile,
+        files: MultipartFile?,
         updateRequest: UpdateArticleRequest
     ): ApiSuccessResponse<Article> {
         validationUtil.validate(updateRequest)
@@ -141,13 +141,15 @@ class ArticleServiceImpl(
         updatedData.title = updateRequest.title ?: updatedData.title
         updatedData.content = updateRequest.content ?: updatedData.content
 
-        if (!files.isEmpty) {
-            try {
-                validationUtil.validateImageFile(files)
-                val filePath = fileStorageService.storeFile(files)
-                updatedData.imgCover = filePath
-            } catch (e: Exception) {
-                throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.message)
+        if (files != null) {
+            if (!files.isEmpty) {
+                try {
+                    validationUtil.validateImageFile(files)
+                    val filePath = fileStorageService.storeFile(files)
+                    updatedData.imgCover = filePath
+                } catch (e: Exception) {
+                    throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.message)
+                }
             }
         }
 

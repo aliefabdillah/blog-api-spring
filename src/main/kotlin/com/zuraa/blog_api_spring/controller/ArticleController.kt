@@ -51,7 +51,7 @@ class ArticleController(val articleService: ArticleService) {
 
     @PatchMapping(value = ["/{id}"])
     fun updateArticle(
-        @RequestParam("files") files: MultipartFile,
+        @RequestParam("files") files: MultipartFile?,
         @ModelAttribute body: UpdateArticleRequest,
         @PathVariable("id") id: String
     ): ApiSuccessResponse<Article> {

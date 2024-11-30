@@ -9,6 +9,6 @@ interface ArticleService {
     fun create(auth: Authentication, files: MultipartFile?, createRequest: CreateArticleRequest): ApiSuccessResponse<ArticleWithAuthor>
     fun getAll(query: ListArticleQuery): ApiSuccessResponse<List<ArticleWithAuthor>>
     fun getById(id: String): ApiSuccessResponse<ArticleWithAuthor>
-    fun update(id: String, files: MultipartFile, updateRequest: UpdateArticleRequest): ApiSuccessResponse<Article>
+    fun update(id: String, files: MultipartFile?, updateRequest: UpdateArticleRequest): ApiSuccessResponse<Article>
     fun delete(id: String): ApiSuccessResponse<Any>
 }
