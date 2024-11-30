@@ -1,12 +1,7 @@
 package com.zuraa.blog_api_spring.controller
 
-import com.zuraa.blog_api_spring.entity.User
-import com.zuraa.blog_api_spring.model.ApiSuccessResponse
-import com.zuraa.blog_api_spring.model.UserLoginRequest
-import com.zuraa.blog_api_spring.model.UserPublicResponse
-import com.zuraa.blog_api_spring.model.UserRegisterRequest
+import com.zuraa.blog_api_spring.model.*
 import com.zuraa.blog_api_spring.service.UserService
-import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -19,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 class UserController(val userService: UserService) {
 
     @PostMapping(value = ["/register"], produces = ["application/json"], consumes = ["application/json"])
-    fun registerUser(@RequestBody body: UserRegisterRequest): ApiSuccessResponse<UserPublicResponse> {
+    fun registerUser(@RequestBody body: UserRegisterRequest): ApiSuccessResponse<UserAuthPublicResponse> {
         return userService.create(request = body)
     }
 
@@ -29,7 +24,12 @@ class UserController(val userService: UserService) {
     }
 
     @GetMapping(value = ["/me"])
-    fun getAuthUser(auth: Authentication): ApiSuccessResponse<UserPublicResponse> {
+    fun getAuthUser(auth: Authentication): ApiSuccessResponse<UserAuthPublicResponse> {
         return userService.getUserAuth(auth)
+    }
+
+    @GetMapping(value = ["/me/details"])
+    fun getAuthUserWithRelation(auth: Authentication): ApiSuccessResponse<UserWithArticle> {
+        return userService.getUserWithArticle(auth)
     }
 }
