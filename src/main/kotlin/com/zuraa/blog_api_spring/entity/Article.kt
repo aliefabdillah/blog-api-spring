@@ -13,5 +13,9 @@ data class Article(
 
     val content: String,
 
-    val authorId: String
+    val authorId: String,
+
+    val createdAt: Date,
+
+    val updatedAt:Date
 )
