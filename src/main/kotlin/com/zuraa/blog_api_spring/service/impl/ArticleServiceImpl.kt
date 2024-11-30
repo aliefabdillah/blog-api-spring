@@ -110,7 +110,19 @@ class ArticleServiceImpl(
     }
 
     override fun update(id: String, updateRequest: UpdateArticleRequest): ApiSuccessResponse<Article> {
-        TODO("Not yet implemented")
+        validationUtil.validate(updateRequest)
+
+        val updatedData = articleRepository.findByIdOrNull(id) ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Article not found!"
+        )
+
+        updatedData.title = updateRequest.title ?: updatedData.title
+        updatedData.content = updateRequest.content ?: updatedData.content
+
+        articleRepository.save(updatedData)
+
+        return ApiSuccessResponse(data = updatedData, status = HttpStatus.OK, code = 200)
     }
 
     override fun delete(id: String): ApiSuccessResponse<Any> {
