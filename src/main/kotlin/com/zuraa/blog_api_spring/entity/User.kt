@@ -12,12 +12,14 @@ data class User(
     @Id
     val id: String = UUID.randomUUID().toString(),
 
-    val name: String,
+    var name: String,
 
     @Indexed(unique = true)
-    val email: String,
+    var email: String,
 
     val password: String,
+
+    var imgProfile: String? = null,
 
     val createdAt: Date,
 
