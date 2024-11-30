@@ -26,9 +26,10 @@ class JwtAuthFilter(private val userDetailsService: CustomUserServiceDetails, pr
     ) {
 
         val requestURI = request.requestURI
+        val requestMethod = request.method
 
         // Check if the endpoint is public
-        if (isPublicEndpoint(requestURI)) {
+        if (isPublicEndpoint(requestURI, requestMethod)) {
             filterChain.doFilter(request, response) // Proceed without authentication
             return
         }
@@ -64,12 +65,16 @@ class JwtAuthFilter(private val userDetailsService: CustomUserServiceDetails, pr
     }
 
     // Helper function to check public endpoints
-    private fun isPublicEndpoint(requestURI: String): Boolean {
+    private fun isPublicEndpoint(requestURI: String, requestMethod: String): Boolean {
         val publicEndpoints = listOf(
-            "/api/user/register",      // Example public endpoints
-            "/api/user/login",      // Example public endpoints
+            "POST" to "/api/user/register",  // Example public endpoints
+            "POST" to "/api/user/login",
+            "GET" to "/api/article/"
         )
-        return publicEndpoints.any { requestURI.startsWith(it) }
+
+        return publicEndpoints.any { (method, route) ->
+            requestMethod.equals(method, ignoreCase = true) && requestURI.startsWith(route)
+        }
     }
 
     private fun String?.doesNotContainBearerToken() =
