@@ -10,7 +10,7 @@ import org.springframework.security.core.Authentication
 interface ArticleService {
     fun create(auth: Authentication, createRequest: CreateArticleRequest): ApiSuccessResponse<ArticleWithAuthor>
     fun getAll(query: Any): ApiSuccessResponse<List<Article>>
-    fun getById(id: String): ApiSuccessResponse<Article>
+    fun getById(id: String): ApiSuccessResponse<ArticleWithAuthor>
     fun update(id: String, updateRequest: UpdateArticleRequest): ApiSuccessResponse<Article>
     fun delete(id: String): ApiSuccessResponse<Any>
 }
