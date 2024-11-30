@@ -127,7 +127,14 @@ class ArticleServiceImpl(
     }
 
     override fun delete(id: String): ApiSuccessResponse<Any> {
-        TODO("Not yet implemented")
+        val deletedUser = articleRepository.findByIdOrNull(id) ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Article  not found!"
+        )
+
+        articleRepository.delete(deletedUser)
+
+        return ApiSuccessResponse(data = null, status = HttpStatus.OK, code = 200)
     }
 
     private fun toArticleWithAuthorResponse(user: User, article: Article) =
