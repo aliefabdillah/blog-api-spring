@@ -35,7 +35,7 @@ class ArticleController(val articleService: ArticleService) {
     @GetMapping(value = ["/list"])
     fun getListArticle(
         @RequestParam("size", defaultValue = "10") size: Int,
-        @RequestParam("page", defaultValue = "0") page: Int,
+        @RequestParam("page", defaultValue = "1") page: Int,
         @RequestParam("title", defaultValue = "") title: String,
         @RequestParam("authorName", defaultValue = "") authorName: String,
     ): ApiSuccessResponse<List<ArticleWithAuthor>> {
