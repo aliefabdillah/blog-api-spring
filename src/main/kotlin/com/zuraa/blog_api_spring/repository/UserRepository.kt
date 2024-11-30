@@ -8,4 +8,7 @@ import java.util.Optional
 interface UserRepository : MongoRepository<User, String> {
     @Query("{'email': ?0}")
     fun findByEmail(email: String?): User?
+
+    @Query("{ 'name': { \$regex: ?0, \$options: 'i' }}")
+    fun findByName(name: String?): List<User>
 }
