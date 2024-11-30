@@ -9,9 +9,9 @@ data class Article(
     @Id
     val id: String = UUID.randomUUID().toString(),
 
-    val title: String,
+    var title: String,
 
-    val content: String,
+    var content: String,
 
     val authorId: String,
 
