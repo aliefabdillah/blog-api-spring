@@ -6,7 +6,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.multipart.MultipartFile
 
 interface ArticleService {
-    fun create(auth: Authentication, createRequest: CreateArticleRequest): ApiSuccessResponse<ArticleWithAuthor>
+    fun create(auth: Authentication, files: MultipartFile?, createRequest: CreateArticleRequest): ApiSuccessResponse<ArticleWithAuthor>
     fun getAll(query: ListArticleQuery): ApiSuccessResponse<List<ArticleWithAuthor>>
     fun getById(id: String): ApiSuccessResponse<ArticleWithAuthor>
     fun update(id: String, files: MultipartFile, updateRequest: UpdateArticleRequest): ApiSuccessResponse<Article>
