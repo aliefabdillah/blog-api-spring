@@ -1,6 +1,7 @@
 package com.zuraa.blog_api_spring.model
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.zuraa.blog_api_spring.entity.Article
 import org.springframework.http.HttpStatus
 import java.util.*
 
@@ -18,7 +19,7 @@ data class ApiErrorResponse(
     val message: String,
 )
 
-data class UserPublicResponse(
+data class UserAuthPublicResponse(
     val id: String,
     val name: String,
     val email: String,
@@ -33,7 +34,16 @@ data class ArticleWithAuthor(
     val authorId: String,
     val createdAt: Date,
     val updatedAt: Date,
-    val author: UserPublicResponse,
+    val author: UserAuthPublicResponse,
+)
+
+data class UserWithArticle(
+    val id: String,
+    val name: String,
+    val email: String,
+    val createdAt: Date,
+    val updatedAt: Date,
+    val articles: List<Article>
 )
 
 data class Pagination(
