@@ -1,38 +1,28 @@
 package com.zuraa.blog_api_spring.service.impl
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.zuraa.blog_api_spring.model.ArticleWithAuthor
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 
 @Service
-class RedisService(private val redisTemplate: RedisTemplate<String, Any>) {
-    val objectMapper = ObjectMapper()
-
-//    fun saveResponse(key: String, response: MutableList<ArticleWithAuthor>) {
-//        val jsonData = objectMapper.writeValueAsString(response)
-//        redisTemplate.opsForValue().set(key, jsonData)
-//    }
-//
-//    fun getResponse(key: String): MutableList<ArticleWithAuthor>? {
-//        val jsonData = redisTemplate.opsForValue().get(key) ?: throw ResponseStatusException(
-//            HttpStatus.NOT_FOUND,
-//            "Article Not Found in cache"
-//        )
-//
-//        return objectMapper.readValue<MutableList<ArticleWithAuthor>>(jsonData)
-//    }
+class RedisService(private val redisTemplate: RedisTemplate<String, String>) {
+    val objectMapper = ObjectMapper().registerKotlinModule()
 
     // Save data to Redis with the specified key
-    fun <T : Any> saveResponse(key: String, value: T) {
-//        val jsonData = objectMapper.writeValue(value)
-        redisTemplate.opsForValue().set(key, value)
+    fun <T> saveResponse(key: String, value: T) {
+        val jsonData = objectMapper.writeValueAsString(value)
+        redisTemplate.opsForValue().set(key, jsonData)
     }
 
     // Get data from Redis by key
-    fun <T> getResponse(key: String): T? {
+    fun <T> getResponse(key: String, typeReference: TypeReference<T>): T? {
         val jsonData = redisTemplate.opsForValue().get(key)
-        return jsonData as T
+        if (jsonData != null) {
+            return objectMapper.readValue(jsonData, typeReference)
+        }
+        return null
     }
 
     // Delete data from Redis by key
