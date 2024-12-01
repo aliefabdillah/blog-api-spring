@@ -8,6 +8,7 @@ import com.zuraa.blog_api_spring.repository.UserRepository
 import com.zuraa.blog_api_spring.service.ArticleService
 import com.zuraa.blog_api_spring.utils.ValidationUtil
 import com.zuraa.blog_api_spring.utils.toUserPublicResponse
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
@@ -22,7 +23,8 @@ class ArticleServiceImpl(
     val validationUtil: ValidationUtil,
     val userRepository: UserRepository,
     val articleRepository: ArticleRepository,
-    val fileStorageService: FileStorageService
+    val fileStorageService: FileStorageService,
+    val redisService: RedisService
 ) : ArticleService {
     override fun create(
         auth: Authentication,
@@ -70,28 +72,55 @@ class ArticleServiceImpl(
         return ApiSuccessResponse(data = articleResponse, status = HttpStatus.CREATED, code = 201)
     }
 
+    //    @Cacheable(value = ["articles"], key = "'all_article'")
     override fun getAll(query: ListArticleQuery): ApiSuccessResponse<List<ArticleWithAuthor>> {
+        val responseData = mutableListOf<ArticleWithAuthor>()
+        val cacheKey = "articles:all_articles"
+
         // Validate query
         validationUtil.validate(query)
 
-        val responseData = mutableListOf<ArticleWithAuthor>()
-        val pageable = PageRequest.of(query.page, query.size)
+        val cachedResponse = redisService.getResponse<List<ArticleWithAuthor>>(cacheKey)
+
+        if (cachedResponse != null) {
+            val paginatedData = paginateData(cachedResponse, size = query.size, page = query.page)
+
+            return ApiSuccessResponse(
+                data = paginatedData,
+                status = HttpStatus.OK,
+                code = 200,
+                pagination = Pagination(
+                    current = query.page + 1,
+                    perPage = query.size,
+                    lastPage = (cachedResponse.size + query.size - 1) / query.size,
+                    total = cachedResponse.size
+                )
+            )
+        }
 
         //  GET USER LIST BY QUERY NAME
         val usersByName = userRepository.findByName(query.authorName)
-        // CONVERT INTO LIST OF ID USER
-        val listOfIdUser = usersByName.map { it.id }
+//        val listOfIdUser = usersByName.map { it.id }
 
         // GET Articles BY Title AND AuthorId
-        val articlesPageData = articleRepository.findByTitleAndAuthorId(query.title, listOfIdUser, pageable)
+        val articlesPageData = articleRepository.findAll()
 
         // Return empty body
-        if (articlesPageData.isEmpty) {
+        if (articlesPageData.size == 0) {
             return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200)
         }
 
+        val paginatedData = paginateData(articlesPageData, query.page, query.size)
+
+        val paginationData = Pagination(
+            current = query.page + 1,
+            perPage = query.size,
+            lastPage = (articlesPageData.size + query.size - 1) / query.size,
+            total = articlesPageData.size
+        )
+
         // get author data
-        articlesPageData.content.forEach { article ->
+        paginatedData.forEach { article ->
             val authorData = userRepository.findByIdOrNull(article.authorId) ?: throw ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "User not found!"
@@ -100,12 +129,9 @@ class ArticleServiceImpl(
             responseData.add(toArticleWithAuthorResponse(authorData, article))
         }
 
-        val paginationData = Pagination(
-            current = query.page + 1,
-            perPage = query.size,
-            lastPage = articlesPageData.totalPages,
-            total = articlesPageData.content.size
-        )
+
+        // SAVE INTO REDIS
+        redisService.saveResponse(cacheKey, responseData)
 
         return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200, pagination = paginationData)
     }
@@ -180,4 +206,20 @@ class ArticleServiceImpl(
             createdAt = article.createdAt,
             updatedAt = article.updatedAt
         )
+
+    private fun <T> paginateData(data: List<T>, page: Int, size: Int): List<T> {
+        val totalItems = data.size
+        val totalPages = (totalItems + size - 1) / size
+
+        val currentPage = when {
+            page < 1 -> 1
+            page > totalPages -> totalPages
+            else -> page
+        }
+
+        val startIndex = (currentPage - 1) * size
+        val endIndex = (startIndex + size).coerceAtMost(totalItems)
+
+        return data.subList(startIndex, endIndex)
+    }
 }
