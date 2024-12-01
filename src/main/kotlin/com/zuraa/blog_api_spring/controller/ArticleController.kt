@@ -44,7 +44,7 @@ class ArticleController(val articleService: ArticleService) {
         @RequestParam("authorName", defaultValue = "") authorName: String,
     ): ApiSuccessResponse<List<ArticleWithAuthor>> {
         val query = ListArticleQuery(
-            size, page - 1, title, authorName
+            size, page, title, authorName
         )
         return articleService.getAll(query)
     }
