@@ -1,5 +1,6 @@
 package com.zuraa.blog_api_spring.service.impl
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.zuraa.blog_api_spring.entity.Article
 import com.zuraa.blog_api_spring.entity.User
 import com.zuraa.blog_api_spring.model.*
@@ -80,58 +81,62 @@ class ArticleServiceImpl(
         // Validate query
         validationUtil.validate(query)
 
-        val cachedResponse = redisService.getResponse<List<ArticleWithAuthor>>(cacheKey)
+        //  GET FROM CACHE
+        val cachedResponse = redisService.getResponse(
+            cacheKey,
+            object : TypeReference<List<Article>>() {})
 
         if (cachedResponse != null) {
-            val paginatedData = paginateData(cachedResponse, size = query.size, page = query.page)
+            val filteredCachedResponse = filterData(cachedResponse, query)
+
+            val paginatedData = paginateData(filteredCachedResponse, size = query.size, page = query.page)
+
+            // get author data
+            paginatedData.forEach { article ->
+                responseData.add(getAuthor(article))
+            }
 
             return ApiSuccessResponse(
-                data = paginatedData,
+                data = responseData,
                 status = HttpStatus.OK,
                 code = 200,
                 pagination = Pagination(
-                    current = query.page + 1,
+                    current = query.page,
                     perPage = query.size,
-                    lastPage = (cachedResponse.size + query.size - 1) / query.size,
-                    total = cachedResponse.size
+                    lastPage = (filteredCachedResponse.size + query.size - 1) / query.size,
+                    total = filteredCachedResponse.size
                 )
             )
         }
 
-        //  GET USER LIST BY QUERY NAME
-        val usersByName = userRepository.findByName(query.authorName)
-//        val listOfIdUser = usersByName.map { it.id }
-
         // GET Articles BY Title AND AuthorId
-        val articlesPageData = articleRepository.findAll()
+        val articlesData = articleRepository.findAll()
+
+        // SAVE INTO REDIS
+        redisService.saveResponse(cacheKey, articlesData)
+
+        // filter by title and author id
+        val filteredArticleData = filterData(articlesData, query)
 
         // Return empty body
-        if (articlesPageData.size == 0) {
+        if (filteredArticleData.isEmpty()) {
             return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200)
         }
 
-        val paginatedData = paginateData(articlesPageData, query.page, query.size)
+        // PAGINATE DATA
+        val paginatedData = paginateData(filteredArticleData, query.page, query.size)
 
         val paginationData = Pagination(
-            current = query.page + 1,
+            current = query.page,
             perPage = query.size,
-            lastPage = (articlesPageData.size + query.size - 1) / query.size,
-            total = articlesPageData.size
+            lastPage = (filteredArticleData.size + query.size - 1) / query.size,
+            total = filteredArticleData.size
         )
 
         // get author data
         paginatedData.forEach { article ->
-            val authorData = userRepository.findByIdOrNull(article.authorId) ?: throw ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "User not found!"
-            )
-
-            responseData.add(toArticleWithAuthorResponse(authorData, article))
+            responseData.add(getAuthor(article))
         }
-
-
-        // SAVE INTO REDIS
-        redisService.saveResponse(cacheKey, responseData)
 
         return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200, pagination = paginationData)
     }
@@ -213,7 +218,7 @@ class ArticleServiceImpl(
 
         val currentPage = when {
             page < 1 -> 1
-            page > totalPages -> totalPages
+            page > totalPages -> return emptyList()
             else -> page
         }
 
@@ -221,5 +226,25 @@ class ArticleServiceImpl(
         val endIndex = (startIndex + size).coerceAtMost(totalItems)
 
         return data.subList(startIndex, endIndex)
+    }
+
+    private fun filterData(data: List<Article>, query: ListArticleQuery): List<Article> {
+        //  GET USER LIST BY QUERY NAME
+        val usersByName = userRepository.findByName(query.authorName)
+        val listOfIdUser = usersByName.map { it.id }
+
+        return data.filter {
+            (it.title.contains(query.title, ignoreCase = true)) &&
+                    (it.authorId in listOfIdUser)
+        }
+    }
+
+    private fun getAuthor(data: Article): ArticleWithAuthor {
+        val authorData = userRepository.findByIdOrNull(data.authorId) ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "User not found!"
+        )
+
+        return toArticleWithAuthorResponse(authorData, data)
     }
 }
