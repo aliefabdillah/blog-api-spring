@@ -117,12 +117,6 @@ class ArticleServiceImpl(
 
         // filter by title and author id
         val filteredArticleData = filterData(articlesData, query)
-
-        // Return empty body
-        if (filteredArticleData.isEmpty()) {
-            return ApiSuccessResponse(data = responseData, status = HttpStatus.OK, code = 200)
-        }
-
         // PAGINATE DATA
         val paginatedData = paginateData(filteredArticleData, query.page, query.size)
 
