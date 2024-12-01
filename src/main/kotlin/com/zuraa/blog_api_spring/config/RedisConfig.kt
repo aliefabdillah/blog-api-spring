@@ -21,26 +21,6 @@ import java.time.Duration
 class RedisConfig {
     //    FUNCTION FOR CONFIG REDIS
     @Bean
-    fun cacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
-        val redisCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-            .entryTtl(Duration.ofMinutes(10))
-            .serializeKeysWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(
-                    StringRedisSerializer()
-                )
-            )
-            .serializeValuesWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(
-                    GenericJackson2JsonRedisSerializer()
-                )
-            )
-
-        return RedisCacheManager.builder(redisConnectionFactory)
-            .cacheDefaults(redisCacheConfig)
-            .build()
-    }
-
-    @Bean
     fun redisTemplate(redisConnectionFactory: RedisConnectionFactory): RedisTemplate<String, String> {
         val redisTemplate = RedisTemplate<String, String>()
         redisTemplate.connectionFactory = redisConnectionFactory

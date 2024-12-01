@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
+import java.time.Duration
 
 @Service
 class RedisService(private val redisTemplate: RedisTemplate<String, String>) {
@@ -13,7 +14,7 @@ class RedisService(private val redisTemplate: RedisTemplate<String, String>) {
     // Save data to Redis with the specified key
     fun <T> saveResponse(key: String, value: T) {
         val jsonData = objectMapper.writeValueAsString(value)
-        redisTemplate.opsForValue().set(key, jsonData)
+        redisTemplate.opsForValue().set(key, jsonData, Duration.ofMinutes(10))
     }
 
     // Get data from Redis by key
