@@ -35,7 +35,8 @@ class ArticleServiceImpl(
         files: MultipartFile?,
         createRequest: CreateArticleRequest
     ): ApiSuccessResponse<ArticleWithAuthor> {
-        validationUtil.validate(createRequest)
+
+        validationUtil.validate(createRequest)  // Validate create request
 
         // get user
         val authUser =
@@ -65,30 +66,24 @@ class ArticleServiceImpl(
             updatedAt = Date()
         )
 
-        articleRepository.save(article)
-
-        authUser.articles.add(article)
-
-        userRepository.save(authUser)
-
-        redisService.deleteResponse(this.cacheKey)
+        articleRepository.save(article)                 //save new article data
+        authUser.articles.add(article)                  //connect new article to authenticated user
+        userRepository.save(authUser)                   //save updated user data
+        redisService.deleteResponse(this.cacheKey)      //delete existing redis cached data
 
         val articleResponse = toArticleWithAuthorResponse(authUser, article)
 
         return ApiSuccessResponse(data = articleResponse, status = HttpStatus.CREATED, code = 201)
     }
 
-    //    @Cacheable(value = ["articles"], key = "'all_article'")
     override fun getAll(query: ListArticleQuery): ApiSuccessResponse<List<ArticleWithAuthor>> {
         val responseData = mutableListOf<ArticleWithAuthor>()
-        val cacheKey = "articles:all_articles"
 
-        // Validate query
-        validationUtil.validate(query)
+        validationUtil.validate(query)  // Validate query
 
         //  GET FROM CACHE
         val cachedResponse = redisService.getResponse(
-            cacheKey,
+            this.cacheKey,
             object : TypeReference<List<Article>>() {})
 
         if (cachedResponse != null) {
@@ -118,7 +113,7 @@ class ArticleServiceImpl(
         val articlesData = articleRepository.findAll()
 
         // SAVE INTO REDIS
-        redisService.saveResponse(cacheKey, articlesData)
+        redisService.saveResponse(this.cacheKey, articlesData)
 
         // filter by title and author id
         val filteredArticleData = filterData(articlesData, query)
@@ -161,16 +156,19 @@ class ArticleServiceImpl(
         files: MultipartFile?,
         updateRequest: UpdateArticleRequest
     ): ApiSuccessResponse<Article> {
-        validationUtil.validate(updateRequest)
+        validationUtil.validate(updateRequest)  //validate request user
 
+        // GET updated article data by id
         val updatedData = articleRepository.findByIdOrNull(id) ?: throw ResponseStatusException(
             HttpStatus.NOT_FOUND,
             "Article not found!"
         )
 
+        // update tittle and content
         updatedData.title = updateRequest.title ?: updatedData.title
         updatedData.content = updateRequest.content ?: updatedData.content
 
+        // update file
         if (files != null) {
             if (!files.isEmpty) {
                 try {
@@ -183,9 +181,8 @@ class ArticleServiceImpl(
             }
         }
 
-        articleRepository.save(updatedData)
-
-        redisService.deleteResponse(this.cacheKey)
+        articleRepository.save(updatedData)         //save updated article data to db
+        redisService.deleteResponse(this.cacheKey)  //delete existing cached data in redis
 
         return ApiSuccessResponse(data = updatedData, status = HttpStatus.OK, code = 200)
     }
@@ -196,9 +193,8 @@ class ArticleServiceImpl(
             "Article  not found!"
         )
 
-        articleRepository.delete(deletedArticle)
-
-        redisService.deleteResponse(this.cacheKey)
+        articleRepository.delete(deletedArticle)        //delete data from database
+        redisService.deleteResponse(this.cacheKey)      //delete cached data in redis
 
         return ApiSuccessResponse(data = null, status = HttpStatus.OK, code = 200)
     }
