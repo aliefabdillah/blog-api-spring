@@ -27,6 +27,9 @@ class ArticleServiceImpl(
     val fileStorageService: FileStorageService,
     val redisService: RedisService
 ) : ArticleService {
+
+    private val cacheKey = "articles:all_articles"
+
     override fun create(
         auth: Authentication,
         files: MultipartFile?,
@@ -67,6 +70,8 @@ class ArticleServiceImpl(
         authUser.articles.add(article)
 
         userRepository.save(authUser)
+
+        redisService.deleteResponse(this.cacheKey)
 
         val articleResponse = toArticleWithAuthorResponse(authUser, article)
 
@@ -180,6 +185,8 @@ class ArticleServiceImpl(
 
         articleRepository.save(updatedData)
 
+        redisService.deleteResponse(this.cacheKey)
+
         return ApiSuccessResponse(data = updatedData, status = HttpStatus.OK, code = 200)
     }
 
@@ -190,6 +197,8 @@ class ArticleServiceImpl(
         )
 
         articleRepository.delete(deletedArticle)
+
+        redisService.deleteResponse(this.cacheKey)
 
         return ApiSuccessResponse(data = null, status = HttpStatus.OK, code = 200)
     }
