@@ -102,7 +102,7 @@ class UserServiceImpl(
         request: UpdateProfileRequest,
         files: MultipartFile
     ): ApiSuccessResponse<UserAuthPublicResponse> {
-        println("ABC")
+
         validationUtil.validate(request)
 
         val updatedData = userRepository.findByEmail(auth.name) ?: throw ResponseStatusException(
