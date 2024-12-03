@@ -32,7 +32,7 @@ data class ArticleWithAuthor(
     val id: String,
     val title: String,
     val content: String,
-    val imgProfile: String,
+    val imgCover: String,
     val authorId: String,
     val createdAt: Date,
     val updatedAt: Date,

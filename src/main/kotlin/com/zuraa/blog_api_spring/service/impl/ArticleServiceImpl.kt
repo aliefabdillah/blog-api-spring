@@ -204,7 +204,7 @@ class ArticleServiceImpl(
             id = article.id,
             title = article.title,
             content = article.content,
-            imgProfile = article.imgCover ?: "",
+            imgCover = article.imgCover ?: "",
             authorId = user.id,
             author = user.toUserPublicResponse(),
             createdAt = article.createdAt,
