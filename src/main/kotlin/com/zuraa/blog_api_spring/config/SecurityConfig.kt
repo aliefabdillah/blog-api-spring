@@ -23,6 +23,8 @@ class SecurityConfig(val authenticationProvider: AuthenticationProvider) {
         // Define public and private routes
         http
             .csrf { it.disable() }
+            .authorizeHttpRequests { it.requestMatchers("/login").permitAll() }
+            .oauth2Login { oauth2 -> oauth2.defaultSuccessUrl("/home") }
 //            .authorizeHttpRequests {
 //                it
 ////                    .requestMatchers("/api/**").authenticated()  //set endpint must be authenticated
