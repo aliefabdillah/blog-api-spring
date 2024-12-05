@@ -2,6 +2,19 @@
 
 ## Authentication
 
+### OAuth
+Request :
+- Method : GET
+- Endpoint : `/index.html`
+Response :
+
+```json
+{
+  "token": "string",
+  "token_type": "string"
+}
+```
+
 ### Register
 Request : 
 - Method : POST
