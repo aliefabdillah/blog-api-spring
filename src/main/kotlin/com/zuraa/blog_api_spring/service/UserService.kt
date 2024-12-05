@@ -14,4 +14,5 @@ interface UserService {
         request: UpdateProfileRequest,
         files: MultipartFile
     ): ApiSuccessResponse<UserAuthPublicResponse>
+    fun checkEmail(email: String): ApiSuccessResponse<Any>
 }
