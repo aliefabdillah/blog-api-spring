@@ -2,6 +2,7 @@ package com.zuraa.blog_api_spring.controller
 
 import com.zuraa.blog_api_spring.model.*
 import com.zuraa.blog_api_spring.service.UserService
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
@@ -44,5 +45,10 @@ class UserController(val userService: UserService) {
         @ModelAttribute formData: UpdateProfileRequest
     ): ApiSuccessResponse<UserAuthPublicResponse> {
         return userService.update(auth = auth, files = files, request = formData)
+    }
+
+    @GetMapping(value = ["/check-email"])
+    fun checkEmail(@RequestParam("email") email: String): ApiSuccessResponse<Any> {
+        return userService.checkEmail(email)
     }
 }
