@@ -1,6 +1,7 @@
 package com.zuraa.blog_api_spring.config
 
 import com.zuraa.blog_api_spring.auth.jwt.JwtAuthFilter
+import com.zuraa.blog_api_spring.auth.oauth.OAuth2LoginSuccessHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -23,8 +24,8 @@ class SecurityConfig(val authenticationProvider: AuthenticationProvider) {
         // Define public and private routes
         http
             .csrf { it.disable() }
-            .authorizeHttpRequests { it.requestMatchers("/login").permitAll() }
-            .oauth2Login { oauth2 -> oauth2.defaultSuccessUrl("/home") }
+//            .oauth2Login { oauth2 -> oauth2.defaultSuccessUrl("/home.html", true) }
+            .oauth2Login { it.successHandler(OAuth2LoginSuccessHandler()) }
 //            .authorizeHttpRequests {
 //                it
 ////                    .requestMatchers("/api/**").authenticated()  //set endpint must be authenticated
