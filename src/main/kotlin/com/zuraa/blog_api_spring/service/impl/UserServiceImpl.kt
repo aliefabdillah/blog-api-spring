@@ -47,6 +47,7 @@ class UserServiceImpl(
             name = request.name,
             email = request.email,
             password = hashedPassword,
+            imgProfile = request.imgProfile ?: "",
             createdAt = Date(),
             updatedAt = Date()
         )
@@ -125,6 +126,11 @@ class UserServiceImpl(
         userRepository.save(updatedData)
 
         return ApiSuccessResponse(data = updatedData.toUserPublicResponse(), code = 200, status = HttpStatus.OK)
+    }
+
+    override fun checkEmail(email: String): ApiSuccessResponse<Any> {
+        val userData = userRepository.findByEmail(email)
+        return ApiSuccessResponse(data = userData ?: true, code = 200, status = HttpStatus.OK)
     }
 
     private fun createAccessToken(user: UserDetails) = tokenUtil.generate(
