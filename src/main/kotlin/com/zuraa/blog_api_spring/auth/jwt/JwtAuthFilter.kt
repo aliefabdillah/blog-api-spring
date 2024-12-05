@@ -69,6 +69,7 @@ class JwtAuthFilter(private val userDetailsService: CustomUserServiceDetails, pr
         val publicEndpoints = listOf(
             "POST" to "/api/user/register",  // Example public endpoints
             "POST" to "/api/user/login",
+            "GET" to "/api/user/check-email",
             "GET" to "/api/article/",
             "GET" to "/index",
         )
