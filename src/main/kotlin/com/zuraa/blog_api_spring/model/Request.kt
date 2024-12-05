@@ -15,6 +15,8 @@ data class UserRegisterRequest(
 
     @field:Size(min = 6, message = "Password at least must be 8 char long")
     val password: String,
+
+    val imgProfile: String?,
 )
 
 data class UserLoginRequest(
