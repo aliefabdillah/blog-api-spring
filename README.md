@@ -6,6 +6,7 @@
 Request :
 - Method : GET
 - Endpoint : `/index.html`
+
 Response :
 
 ```json
